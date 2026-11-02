@@ -54,7 +54,8 @@ css/style.css       stile
 js/app.js           interfaccia e passaggi
 js/fabric.js        conversione cm/Aida ↔ punti
 js/color.js         RGB → Lab (D65), CIEDE2000
-js/quantize.js      ricampionamento, k-means in Lab, abbinamento DMC, pulizia punti isolati
+js/quantize.js      ricampionamento, k-means in Lab, abbinamento DMC, pulizia punti isolati, misure di qualità
+js/qualita.js       stima della somiglianza alla foto e consigli
 js/worker.js        esegue la conversione in background
 js/symbols.js       56 simboli per lo schema (disegnati come forme, uguali a schermo e nel PDF)
 js/pdf.js           impaginazione e creazione del PDF
@@ -85,6 +86,8 @@ Se modifichi `data/dmc.json`, rigenera la copia con `node tools/genera-dmc-js.js
 - Le scritte piccole restano leggibili solo se ogni lettera è alta almeno 8–10 punti: altrimenti conviene ritagliare più stretto, usare una stoffa più grande o una tela più fitta.
 
 ## Crediti
+
+Pixel e Croce è nato da una chiacchierata con **Selly**, un punto alla volta.
 
 - Palette DMC: pacchetto R [dmc](https://github.com/sharlagelfand/dmc) di Sharla Gelfand (licenza MIT), che a sua volta ripulisce i dati di [CrossStitchCreator](https://github.com/adrianj/CrossStitchCreator) di Adrian J. Nomi delle abbreviazioni espansi e correzioni RGB riprese da quel pacchetto. DMC è un marchio di DMC; questo progetto non è affiliato.
 - [jsPDF](https://github.com/parallax/jsPDF) — licenza MIT.

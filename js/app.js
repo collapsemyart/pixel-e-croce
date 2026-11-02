@@ -135,6 +135,7 @@
       ctx.drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
       stato.sorgente = c;
+      stato.scalaFoto = s; // per sapere quanti pixel originali ha ogni punto
       mostraMiniatura(c, file.name);
       messaggio(el.msgFoto, 'Foto caricata: ' + w + ' × ' + h + ' pixel.');
       avviaRitaglio(c);
@@ -172,6 +173,20 @@
     return r && r.larghezza > 0 && r.altezza > 0 ? r.larghezza / r.altezza : 1;
   }
 
+  /**
+   * Allinea le proporzioni del riquadro di ritaglio a quelle della stoffa.
+   * Si confronta con le proporzioni applicate davvero al riquadro (non con
+   * l'ultima misura letta, che mentre si scrive può essere non valida).
+   */
+  function allineaRitaglio() {
+    if (!stato.cropper || !stato.ricamo || stato.ricamo.errore) return false;
+    var r = rapporto();
+    if (Math.abs(r - stato.rapportoRitaglio) < 1e-9) return false;
+    stato.rapportoRitaglio = r;
+    stato.cropper.setAspectRatio(r); // fa partire anche l'evento "crop"
+    return true;
+  }
+
   function avviaRitaglio(c) {
     if (stato.cropper) { stato.cropper.destroy(); stato.cropper = null; }
     el.ritaglioVuoto.hidden = true;
@@ -182,6 +197,7 @@
       el.imgRitaglio.dataset.url = url;
       el.imgRitaglio.onload = function () {
         el.imgRitaglio.onload = null;
+        stato.rapportoRitaglio = rapporto();
         stato.cropper = new Cropper(el.imgRitaglio, {
           viewMode: 1,
           aspectRatio: rapporto(),
@@ -191,7 +207,7 @@
           guides: true, center: true, background: false,
           checkOrientation: false,
           toggleDragModeOnDblclick: false,
-          ready: function () { aggiorna(); },
+          ready: function () { allineaRitaglio(); aggiorna(); },
           crop: aggiornaDopo
         });
       };
@@ -239,11 +255,8 @@
   }
 
   function stoffaCambiata() {
-    var prima = rapporto();
     leggiStoffa();
-    if (stato.cropper && Math.abs(rapporto() - prima) > 1e-9 && !stato.ricamo.errore) {
-      stato.cropper.setAspectRatio(rapporto()); // fa partire anche l'evento "crop"
-    }
+    allineaRitaglio();
     aggiornaFoglio();
     aggiornaDopo();
   }
@@ -276,6 +289,9 @@
     if (!stato.sorgente || !stato.palette) return;
     var r = stato.ricamo || leggiStoffa();
     if (r.errore) return;
+    // sicurezza: se il riquadro non ha le proporzioni della stoffa lo si
+    // corregge prima (l'evento "crop" farà ripartire la conversione)
+    if (allineaRitaglio()) return;
     var a = areaRitaglio();
     if (!(a.w > 0 && a.h > 0)) return;
 
@@ -300,6 +316,9 @@
       palette: stato.palette
     };
     stato.ultimaRichiesta = richiesta;
+    // pixel della foto originale per ogni punto (la foto può essere stata ridotta)
+    stato.pixelPerPunto = Math.min(a.w / (stato.scalaFoto || 1) / r.larghezza, a.h / (stato.scalaFoto || 1) / r.altezza);
+    stato.maxColoriRichiesti = richiesta.maxColori;
     el.inCorso.hidden = false;
     el.anteprimaVuota.hidden = true;
     el.anteprima.hidden = false;
@@ -320,6 +339,7 @@
       return;
     }
     stato.risultato = msg.risultato;
+    mostraQualita();
     disegnaAnteprima();
     disegnaLegenda();
     aggiornaFoglio();
@@ -396,6 +416,35 @@
       '<span><strong>' + r.colori.length + '</strong> ' + (r.colori.length === 1 ? 'colore' : 'colori') + ' DMC</span>' +
       '<span><strong>' + numero(tot) + '</strong> punti totali</span>' +
       '<span><strong>' + decimale(SPXFabric.puntiInCm(W, stato.aida)) + ' × ' + decimale(SPXFabric.puntiInCm(H, stato.aida)) + '</strong> cm</span>';
+  }
+
+  function mostraQualita() {
+    var r = stato.risultato;
+    var box = $('qualita');
+    if (!r.qualita || !window.SPXQualita) { box.hidden = true; return; }
+    var v = SPXQualita.valuta(r.qualita, {
+      pixelPerPunto: stato.pixelPerPunto || 99,
+      coloriUsati: r.colori.length,
+      maxColori: stato.maxColoriRichiesti || 50
+    });
+    box.hidden = false;
+    box.className = 'qualita ' + v.classe;
+    $('q-livello').textContent = v.livello;
+    $('q-punteggio').textContent = v.punteggio + '/100';
+    $('q-barra').style.width = v.punteggio + '%';
+    var voci = $('q-voci');
+    voci.innerHTML = '';
+    v.voci.forEach(function (x) {
+      var d = document.createElement('div');
+      var dt = document.createElement('dt'); dt.textContent = x.nome;
+      var dd = document.createElement('dd'); dd.textContent = x.valore;
+      d.appendChild(dt); d.appendChild(dd); voci.appendChild(d);
+    });
+    var lista = $('q-consigli');
+    lista.innerHTML = '';
+    v.consigli.forEach(function (t) {
+      var li = document.createElement('li'); li.textContent = t; lista.appendChild(li);
+    });
   }
 
   function disegnaLegenda() {

@@ -151,6 +151,21 @@ for (var cx = 0; cx < 14; cx++) {
 }
 verifica('pulizia: un tratto sottile scuro (es. una lettera) non viene cancellato', colonnaScura.indexOf(true) >= 0);
 
+// ── qualita.js ──────────────────────────────────────────────────────────
+console.log('qualita.js');
+var Qualita = require('../js/qualita.js');
+var mq = Quantize.converti({ pixels: img, srcW: 300, srcH: 200, larghezza: 60, altezza: 40, maxColori: 20, pulizia: true, palette: palette }).qualita;
+verifica('la conversione restituisce le misure di qualità', mq && mq.dettaglioPerso >= 0 && mq.dettaglioPerso <= 1 && mq.deltaE >= 0,
+  JSON.stringify(mq));
+var buona = Qualita.valuta({ dettaglioPerso: 0.05, deltaE: 3, contrasto: 60, luminosita: 55 }, { pixelPerPunto: 5, coloriUsati: 15, maxColori: 20 });
+verifica('foto adatta → Ottima', buona.livello === 'Ottima' && buona.punteggio >= 85, buona.punteggio);
+var cattiva = Qualita.valuta({ dettaglioPerso: 0.45, deltaE: 11, contrasto: 20, luminosita: 15 }, { pixelPerPunto: 0.6, coloriUsati: 20, maxColori: 20 });
+verifica('foto piccola, scura, piena di dettagli → Scarsa con consigli', cattiva.livello === 'Scarsa' && cattiva.consigli.length >= 4,
+  cattiva.punteggio + ' ' + cattiva.consigli.length);
+var piuPunti = Quantize.converti({ pixels: img, srcW: 300, srcH: 200, larghezza: 150, altezza: 100, maxColori: 20, pulizia: true, palette: palette }).qualita;
+verifica('più punti → meno dettagli persi', piuPunti.dettaglioPerso <= mq.dettaglioPerso,
+  piuPunti.dettaglioPerso.toFixed(3) + ' vs ' + mq.dettaglioPerso.toFixed(3));
+
 // ── pdf.js: impaginazione ───────────────────────────────────────────────
 console.log('pdf.js');
 var lay = Pdf.calcolaPagine(60, 86, { formato: 'A4', orientamento: 'verticale', lato: 3 });

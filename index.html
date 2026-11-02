@@ -73,6 +73,19 @@
         <span class="carica__nota">JPG, PNG, HEIC (se il browser lo supporta)</span>
       </label>
       <p class="messaggio" id="msg-foto" role="status" aria-live="polite"></p>
+      <details class="guida">
+        <summary>Quale foto funziona meglio?</summary>
+        <ul class="guida__lista">
+          <li class="si"><strong>Soggetto grande</strong> che riempie la foto: un viso in primo piano, un animale, un fiore.</li>
+          <li class="si"><strong>Sfondo semplice</strong> e di colore diverso dal soggetto.</li>
+          <li class="si"><strong>Buona luce</strong>, foto nitida e originale (non uno screenshot né una foto ricevuta in chat, che sono compresse).</li>
+          <li class="si"><strong>Pochi colori e contorni netti</strong>: disegni, loghi e illustrazioni vengono benissimo.</li>
+          <li class="no"><strong>Scritte piccole</strong>: ogni lettera deve essere alta almeno 8–10 punti, altrimenti diventa illeggibile.</li>
+          <li class="no"><strong>Folle e paesaggi pieni di dettagli</strong>: visi piccoli e foglie si perdono, servono molti punti.</li>
+          <li class="no"><strong>Controluce, foto scure o con filtri</strong>: i colori si confondono.</li>
+        </ul>
+        <p class="aiuto">Dopo il caricamento, al passo 5 trovi una stima di quanto lo schema somiglierà alla foto, con consigli per migliorarlo.</p>
+      </details>
     </section>
 
     <!-- 2. Stoffa -->
@@ -145,6 +158,16 @@
       <div class="vuoto" id="anteprima-vuota">L'anteprima apparirà qui dopo aver caricato la foto.</div>
       <div id="anteprima" hidden>
         <div class="statistiche" id="statistiche" aria-live="polite"></div>
+        <div class="qualita" id="qualita" aria-live="polite">
+          <div class="qualita__testa">
+            <span class="qualita__titolo">Somiglianza prevista alla foto</span>
+            <span class="qualita__esito"><strong id="q-livello">—</strong> <span id="q-punteggio"></span></span>
+          </div>
+          <div class="qualita__barra" aria-hidden="true"><span id="q-barra"></span></div>
+          <dl class="qualita__voci" id="q-voci"></dl>
+          <ul class="qualita__consigli" id="q-consigli"></ul>
+          <p class="qualita__nota">È una stima calcolata confrontando la foto con lo schema: serve a orientarti.</p>
+        </div>
         <div class="zoom">
           <label for="zoom">Ingrandimento</label>
           <input type="range" id="zoom" min="0.5" max="30" step="0.25" value="4" class="cursore">
@@ -201,6 +224,10 @@
   </main>
 
   <footer class="piede contenitore">
+    <p class="dedica">
+      <svg viewBox="0 0 14 12" width="18" height="15" aria-hidden="true"><g stroke="#d2462f" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 1.5l3 3M4.5 1.5l-3 3M5.5 1.5l3 3M8.5 1.5l-3 3M9.5 1.5l3 3M12.5 1.5l-3 3M3.5 5.5l3 3M6.5 5.5l-3 3M7.5 5.5l3 3M10.5 5.5l-3 3M5.5 8.5l3 3M8.5 8.5l-3 3"/></g></svg>
+      <span>Nato da una chiacchierata con <strong>Selly</strong>, un punto alla volta.</span>
+    </p>
     <p><strong>Pixel e Croce</strong> è gratuito e funziona interamente nel browser. I colori a schermo sono approssimazioni dei fili veri: verifica le matasse dal vivo.</p>
     <p>Palette DMC dal pacchetto <a href="https://github.com/sharlagelfand/dmc">dmc</a> (MIT). PDF con <a href="https://github.com/parallax/jsPDF">jsPDF</a>, ritaglio con <a href="https://github.com/fengyuanchen/cropperjs">Cropper.js</a>.</p>
   </footer>
@@ -210,6 +237,7 @@
   <script src="js/fabric.js"></script>
   <script src="js/color.js"></script>
   <script src="js/quantize.js"></script>
+  <script src="js/qualita.js"></script>
   <script src="js/symbols.js"></script>
   <script src="js/pdf.js"></script>
   <script src="js/app.js"></script>

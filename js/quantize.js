@@ -324,6 +324,56 @@
     return fili;
   }
 
+  function luma(r, g, b) { return 0.299 * r + 0.587 * g + 0.114 * b; }
+
+  /**
+   * Misure per stimare quanto lo schema somiglierà alla foto.
+   *  - dettaglioPerso (0–1): quota della variazione di luminosità della foto
+   *    che sta dentro i singoli punti e quindi si perde (scritte piccole,
+   *    texture fini). Varianza totale = varianza tra i punti + dentro i punti.
+   *  - deltaE: differenza media (CIEDE2000) tra il colore medio di ogni punto
+   *    e il filo assegnato. Sotto 3 quasi invisibile, sopra 10 molto evidente.
+   *  - contrasto: differenza di luminosità L* tra il 5° e il 95° percentile.
+   *  - luminosita: L* media (0 nero, 100 bianco).
+   */
+  function misuraQualita(opz, rgb, griglia, labDmc) {
+    var n = opz.larghezza * opz.altezza;
+    var px = opz.pixels, np = opz.srcW * opz.srcH;
+    var s1 = 0, s2 = 0, i;
+    // la foto è grande: basta un campione regolare di pixel
+    var passo = Math.max(1, Math.floor(np / 1e6));
+    var conta = 0;
+    for (i = 0; i < np; i += passo) {
+      var o = i * 4, al = px[o + 3] / 255;
+      var y = luma(px[o] * al + 255 * (1 - al), px[o + 1] * al + 255 * (1 - al), px[o + 2] * al + 255 * (1 - al));
+      s1 += y; s2 += y * y; conta++;
+    }
+    var varTot = s2 / conta - (s1 / conta) * (s1 / conta);
+    var t1 = 0, t2 = 0, sommaDE = 0;
+    var elle = new Float32Array(n);
+    for (i = 0; i < n; i++) {
+      var r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2];
+      var yy = luma(r, g, b);
+      t1 += yy; t2 += yy * yy;
+      var lab = Color.rgbToLabFloat(r, g, b);
+      elle[i] = lab[0];
+      var f = griglia[i];
+      sommaDE += Color.ciede2000(lab[0], lab[1], lab[2], labDmc[f * 3], labDmc[f * 3 + 1], labDmc[f * 3 + 2]);
+    }
+    var varTra = t2 / n - (t1 / n) * (t1 / n);
+    var dettaglioPerso = varTot > 25 ? Math.min(1, Math.max(0, 1 - varTra / varTot)) : 0;
+    var ordinati = Array.prototype.slice.call(elle).sort(function (a, b) { return a - b; });
+    var p = function (q) { return ordinati[Math.min(n - 1, Math.floor(q * n))]; };
+    var sommaL = 0;
+    for (i = 0; i < n; i++) sommaL += elle[i];
+    return {
+      dettaglioPerso: dettaglioPerso,
+      deltaE: sommaDE / n,
+      contrasto: p(0.95) - p(0.05),
+      luminosita: sommaL / n
+    };
+  }
+
   /**
    * Conversione completa.
    * opz: { pixels (RGBA), srcW, srcH, larghezza, altezza, maxColori, pulizia, palette }
@@ -356,6 +406,8 @@
       }
     }
 
+    var qualita = misuraQualita(opz, rgb, griglia, labDmc);
+
     // conteggio e ordinamento per numero di punti
     var conteggio = {};
     for (i = 0; i < n; i++) conteggio[griglia[i]] = (conteggio[griglia[i]] || 0) + 1;
@@ -372,7 +424,7 @@
     var finale = new Uint16Array(n);
     for (i = 0; i < n; i++) finale[i] = nuovoIndice[griglia[i]];
 
-    return { larghezza: W, altezza: H, griglia: finale, colori: colori };
+    return { larghezza: W, altezza: H, griglia: finale, colori: colori, qualita: qualita };
   }
 
   var api = {
@@ -382,6 +434,7 @@
     raggruppaColori: raggruppaColori,
     kmeans: kmeans,
     pulisciIsolati: pulisciIsolati,
+    misuraQualita: misuraQualita,
     converti: converti
   };
 

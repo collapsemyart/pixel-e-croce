@@ -380,6 +380,70 @@ input[aria-invalid="true"] { border-color: var(--errore); }
 .legenda .nome { color: var(--tenue); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .legenda .punti { font-variant-numeric: tabular-nums; color: var(--tenue); }
 
+/* ── Guida alla foto ─────────────────────────────────────── */
+.guida {
+  margin-top: 14px;
+  border: 1px solid var(--bordo);
+  border-radius: 10px;
+  background: #fbf7f1;
+}
+.guida summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  font-weight: 600;
+  color: var(--accento-scuro);
+  list-style-position: inside;
+}
+.guida summary:focus-visible { outline: 3px solid rgba(210, 70, 47, .35); border-radius: 10px; }
+.guida[open] summary { border-bottom: 1px dashed var(--bordo); }
+.guida__lista { list-style: none; margin: 0; padding: 10px 14px 0; display: grid; gap: 8px; font-size: .93rem; }
+.guida__lista li { position: relative; padding-left: 28px; }
+.guida__lista li::before {
+  position: absolute; left: 0; top: 1px;
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 5px;
+  font: 800 .8rem/1 var(--mono);
+  color: #fff;
+}
+.guida__lista .si::before { content: "✓"; background: var(--verde); }
+.guida__lista .no::before { content: "×"; background: var(--accento); font-size: 1rem; }
+.guida .aiuto { padding: 0 14px 6px; }
+
+/* ── Qualità prevista ────────────────────────────────────── */
+.qualita {
+  --q: var(--tenue);
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fbf7f1;
+  border: 1px solid var(--bordo);
+  border-left: 6px solid var(--q);
+}
+.qualita.ottima { --q: #2f8a4f; }
+.qualita.buona { --q: var(--verde); }
+.qualita.discreta { --q: var(--giallo); }
+.qualita.scarsa { --q: var(--accento); }
+.qualita__testa { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.qualita__titolo { font-weight: 600; font-size: .95rem; }
+.qualita__esito strong { color: var(--q); font: 700 1.25rem/1 var(--serif); }
+.qualita__esito span { color: var(--tenue); font-variant-numeric: tabular-nums; font-size: .9rem; }
+.qualita.discreta .qualita__esito strong { color: #a87410; }
+.qualita__barra { height: 10px; margin: 10px 0 12px; border-radius: 99px; background: #ebe2d4; overflow: hidden; }
+.qualita__barra span {
+  display: block; height: 100%; width: 0;
+  background: repeating-linear-gradient(90deg, var(--q) 0 8px, color-mix(in srgb, var(--q) 80%, #fff) 8px 10px);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+@media (prefers-reduced-motion: reduce) { .qualita__barra span { transition: none; } }
+.qualita__voci { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 14px; margin: 0 0 10px; font-size: .85rem; }
+.qualita__voci div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted var(--bordo); padding-bottom: 3px; }
+.qualita__voci dt { color: var(--tenue); }
+.qualita__voci dd { margin: 0; font-weight: 600; }
+.qualita__consigli { margin: 0; padding-left: 18px; font-size: .92rem; display: grid; gap: 6px; }
+.qualita__nota { margin: 10px 0 0; font-size: .8rem; color: var(--tenue); }
+
 /* ── Bottoni ─────────────────────────────────────────────── */
 .bottone {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -419,3 +483,13 @@ input[aria-invalid="true"] { border-color: var(--errore); }
   font-size: .85rem;
 }
 .piede p { margin: 6px 0; }
+.dedica {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 14px !important;
+  padding: 12px 0;
+  border-top: 1.5px dashed var(--bordo);
+  border-bottom: 1.5px dashed var(--bordo);
+  font: italic 1.05rem/1.4 var(--serif);
+  color: var(--inchiostro);
+}
+.dedica svg { flex: none; }
